@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="css/reset.css" />
+		<link rel="stylesheet" href="css/public.css" />
+		<style>
+			.wrap {
+				width: 1200px;
+				height: 800px;
+				background: url(images/bg.png);
+				margin: 100px auto;
+				padding: 212px 0 0 280px;
+				box-sizing: border-box;
+			}
+			
+			.box {
+				width: 640px;
+				height: 380px;
+			}
+			
+			.box_left {
+				width: 160px;
+				height: 100%;
+				position: relative;
+			}
+			
+			.box_left button {
+				position: absolute;
+				left: 26px;
+				top: 170px;
+				width: 100px;
+				height: 42px;
+				border: 1px solid #fff;
+				box-sizing: border-box;
+				border-radius: 5px;
+				background: #fff;
+				color: #594da7;
+				font-size: 20px;
+			}
+			
+			.box_right {
+				width: 480px;
+				height: 100%;
+				padding-top:20px;
+				box-sizing: border-box;
+			}
+			
+			.list {
+				width: 480px;
+				height: 100%;
+				box-sizing: border-box;
+				position: relative;
+			}
+			
+			.list li {
+				/*float: left;*/
+				width: 100px;
+				height: 100px;
+				position: relative;
+			}
+			
+			.list li img {
+				width: 100px;
+				height: 100px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="wrap">
+			<div class="box clearfix">
+				<div class="box_left fl">
+					<button>随机</button>
+				</div>
+				<div class="box_right fl">
+					<ul class="list">
+						<li><img src="./images/1.jpg" /></li>
+						<li><img src="./images/2.jpg" /></li>
+						<li><img src="./images/3.jpg" /></li>
+						<li><img src="./images/4.jpg" /></li>
+						<li><img src="./images/5.jpg" /></li>
+						<li><img src="./images/6.jpg" /></li>
+						<li><img src="./images/7.jpg" /></li>
+						<li><img src="./images/8.jpg" /></li>
+						<li><img src="./images/9.jpg" /></li>
+						<li><img src="./images/10.jpg" /></li>
+						<li><img src="./images/11.jpg" /></li>
+						<li><img src="./images/12.jpg" /></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<script>
+			var btn = document.getElementsByTagName('button')[0];
+			console.log(btn);
+			var span = document.getElementsByTagName('span');
+			var list = document.getElementsByClassName('list')[0];
+			var lis = document.getElementsByTagName('li');
+
+			var newArr = []; //给每个li定位,将其top和left值存入
+
+			for(var i = 0; i < lis.length; i++) { //
+				lis[i].style.position = 'absolute';
+				lis[i].style.left = (i % 4) * 120 + 'px'; //通过下标取模获得left值i=0,left=0;i=1,left=120;i=2,left=2*120.....
+				lis[i].style.top = (Math.floor(i / 4)) * 120 + 'px'; //除法获取列数，向下取整获取行数，i=0,top=0;i=4,5,6,7  top=1*120;i=8,9,10,11,top=2*120.....
+				newArr.push({
+					left: lis[i].offsetLeft,
+					top: lis[i].offsetTop
+				})
+								fn(lis[i])
+
+			}
+			//			btn.onclick = function() { //给左边按钮绑定点击事件，随机变换图片
+			//
+			//				newArr.sort(function() {
+			//					return Math.random() - 0.5;
+			//				})
+			//				for(var i = 0; i < lis.length; i++) {
+			//					mTween(lis[i], newArr[i], 300, "linear")
+			//				}
+			//			};
+
+			function fn(box) {
+
+				box.onmousedown = function(ev) {
+					var downPosition = {
+						left:box.offsetLeft,
+						top:box.offsetTop
+					}
+					var disX = ev.clientX - box.offsetLeft;//拖拽每一张图片
+					var disY = ev.clientY - box.offsetTop;
+
+					maxX = list.clientWidth - box.offsetWidth;
+					maxY = list.clientHeight - box.offsetHeight;
+					document.onmousemove = function(ev) {
+						l = ev.clientX - disX;
+						t = ev.clientY - disY;
+
+						if(l < 0) {
+							l = 0;
+						}
+						if(t < 0) {
+							t = 0;
+						}
+						if(l>maxX){
+							l=maxX;
+						}
+						if(t>maxY){
+							t=maxY;
+						}
+						
+						box.style.left = l+"px";
+						box.style.top = t+"px";
+						ev.preventDefault();
+
+						
+
+					};
+					document.onmouseup = function(){
+						document.onmousemove = document.onmouseup = null;
+						var arr = [];
+						for(var i = 0; i < lis.length; i++) {
+							if(lis[i] !== box && collision(box, lis[i])) {
+								arr.push(lis[i]);
+							}
+						}
+						
+						//找到该拖拽元素的left\top值
+						var boxX = box.offsetLeft + box.offsetWidth / 2;
+						var boxY = box.offsetTop + box.offsetHeight / 2;
+						
+						var min = 10000;
+						var oLi = null;
+						
+						for(var i = 0; i < arr.length; i++) {//被碰撞元素中心点距上边距，左边距距离
+
+							var x = arr[i].offsetLeft + arr[i].offsetWidth / 2;
+							var y = arr[i].offsetTop + arr[i].offsetHeight / 2;
+
+							var chaX = x - boxX;
+							var chaY = y - boxY;
+
+							var xiebian = chaX * chaX + chaY * chaY;
+
+							if(min >= xiebian) {
+								min = xiebian;
+								oLi  = arr[i];
+							}
+
+						}
+						if(oLi){
+							var oPosition = {
+								left:oLi.offsetLeft,
+								top: oLi.offsetTop
+							}
+							
+							mTween(oLi, downPosition, 200, "linear");
+
+							mTween(box, oPosition, 200, "linear");
+						} else {
+
+							mTween(box, downPosition, 200, "linear");
+						}
+
+						
+					};
+				};
+
+				function collision(obj1, obj2) {
+					var obj1Rect = obj1.getBoundingClientRect();
+					var obj2Rect = obj2.getBoundingClientRect();
+
+					if(obj1Rect.right < obj2Rect.left || obj1Rect.bottom < obj2Rect.top || obj1Rect.left > obj2Rect.right || obj1Rect.top > obj2Rect.bottom) {
+						return false;
+					} else {
+						return true;
+					}
+				}
+			}
+		</script>
+		<script src="./utils.js"></script>
+	</body>
+
+</html>
